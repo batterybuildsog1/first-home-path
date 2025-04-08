@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
@@ -8,6 +7,7 @@ import HomeInsights from "@/components/dashboard/HomeInsights";
 import AIMentor from "@/components/dashboard/AIMentor";
 import { useToast } from "@/hooks/use-toast";
 import OnboardingForm from "@/components/onboarding/OnboardingForm";
+import { DollarSign, Home, Lightbulb, Percent } from "lucide-react";
 
 const Index = () => {
   const { toast } = useToast();
