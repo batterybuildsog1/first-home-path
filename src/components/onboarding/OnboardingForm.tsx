@@ -13,7 +13,13 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, HelpCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface OnboardingFormProps {
   onComplete: (userData: any) => void;
@@ -28,7 +34,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
     email: "",
     income: "",
     savings: "",
-    creditScore: "",
+    creditScore: "620-639",
     debt: "",
     homeGoal: "6-12 months",
     city: "",
@@ -45,6 +51,24 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
     "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", 
     "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", 
     "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+  ];
+
+  // Credit score ranges
+  const creditScoreRanges = [
+    "Below 550",
+    "550-579",
+    "580-599",
+    "600-619",
+    "620-639",
+    "640-659",
+    "660-679",
+    "680-699",
+    "700-719",
+    "720-739",
+    "740-759",
+    "760-779",
+    "780-799",
+    "800+"
   ];
 
   const totalSteps = 3;
@@ -238,11 +262,26 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
           {step === 2 && (
             <div className="space-y-4 animate-fade-in">
               <div className="space-y-2">
-                <Label htmlFor="income">What's your monthly income?</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="income">What's your annual income?</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-5 w-5 p-0">
+                          <HelpCircle className="h-4 w-4" />
+                          <span className="sr-only">Income information</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>For mortgage purposes, this is your income AND your co-borrower, spouse, significant other or non-occupant co-borrower, etc.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <Input
                   id="income"
                   name="income"
-                  placeholder="$ 5,000"
+                  placeholder="$ 60,000"
                   value={formData.income}
                   onChange={handleInputChange}
                 />
@@ -258,14 +297,22 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="creditScore">What's your credit score? (Estimate is fine)</Label>
-                <Input
-                  id="creditScore"
-                  name="creditScore"
-                  placeholder="720"
-                  value={formData.creditScore}
-                  onChange={handleInputChange}
-                />
+                <Label htmlFor="creditScore">What's your credit score range?</Label>
+                <Select 
+                  value={formData.creditScore} 
+                  onValueChange={(value) => handleSelectChange("creditScore", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select credit score range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {creditScoreRanges.map((range) => (
+                      <SelectItem key={range} value={range}>
+                        {range}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           )}
