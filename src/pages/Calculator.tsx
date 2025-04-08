@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MortgageCalculator from "@/components/calculators/MortgageCalculator";
-import ProgressiveMortgageCalculator from "@/components/calculators/ProgressiveMortgageCalculator";
 import HomeAffordabilityCalculator from "@/components/calculators/HomeAffordabilityCalculator";
 import { Card, CardContent } from "@/components/ui/card";
 import { Info, Search } from "lucide-react";
@@ -12,7 +11,6 @@ import AIMentor from "@/components/dashboard/AIMentor";
 const Calculator = () => {
   const [showAIMentor, setShowAIMentor] = useState(false);
   const [isAIFullScreen, setIsAIFullScreen] = useState(false);
-  const [calculatorView, setCalculatorView] = useState("progressive"); // 'progressive' or 'advanced'
 
   const toggleAIMentor = () => {
     setShowAIMentor(!showAIMentor);
@@ -65,18 +63,7 @@ const Calculator = () => {
             </div>
             
             <TabsContent value="mortgage">
-              <Tabs value={calculatorView} onValueChange={setCalculatorView} className="mb-6">
-                <TabsList className="w-full md:w-auto">
-                  <TabsTrigger value="progressive">Guided Experience</TabsTrigger>
-                  <TabsTrigger value="advanced">Advanced Calculator</TabsTrigger>
-                </TabsList>
-              </Tabs>
-              
-              {calculatorView === "progressive" ? (
-                <ProgressiveMortgageCalculator />
-              ) : (
-                <MortgageCalculator />
-              )}
+              <MortgageCalculator />
             </TabsContent>
             
             <TabsContent value="affordability">

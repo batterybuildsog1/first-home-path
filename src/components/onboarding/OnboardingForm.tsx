@@ -11,7 +11,6 @@ import DebtInfoStep from "./DebtInfoStep";
 import FormNavigation from "./FormNavigation";
 import { states, creditScoreRanges, initialFormData } from "./constants";
 import { validateCurrentStep, calculateTotalDebt, FormData } from "./validation";
-import { useAuth } from "../../App";
 
 interface OnboardingFormProps {
   onComplete: (userData: any) => void;
@@ -19,13 +18,9 @@ interface OnboardingFormProps {
 
 const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
   const { toast } = useToast();
-  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    ...initialFormData,
-    email: user?.email || "",
-  });
+  const [formData, setFormData] = useState<FormData>(initialFormData);
 
   const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
@@ -64,10 +59,13 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
       debt: totalDebt
     };
     
-    // Submit to parent component which will handle Supabase saving
     setTimeout(() => {
       setIsSubmitting(false);
       onComplete(processedData);
+      toast({
+        title: "Onboarding Complete!",
+        description: "Welcome to FirstHomePath. Your journey begins now!",
+      });
     }, 1500);
   };
 

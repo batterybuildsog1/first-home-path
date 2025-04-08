@@ -1,61 +1,145 @@
 
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
+import ProgressTracker from "@/components/dashboard/ProgressTracker";
+import FinancialSummary from "@/components/dashboard/FinancialSummary";
+import HomeInsights from "@/components/dashboard/HomeInsights";
+import AIMentor from "@/components/dashboard/AIMentor";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import OnboardingForm from "@/components/onboarding/OnboardingForm";
+import { DollarSign, Home, Lightbulb, Percent } from "lucide-react";
 
 const Index = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [isNewUser, setIsNewUser] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isAIFullScreen, setIsAIFullScreen] = useState(false);
   
   const handleStartJourney = () => {
-    navigate("/login");
+    if (isNewUser) {
+      setShowOnboarding(true);
+    } else {
+      toast({
+        title: "Welcome back!",
+        description: "Continue your journey to homeownership."
+      });
+    }
   };
   
+  const handleCompleteOnboarding = (userData: any) => {
+    console.log("Onboarding completed with data:", userData);
+    setIsNewUser(false);
+    setShowOnboarding(false);
+    
+    toast({
+      title: "Profile Created!",
+      description: "Your personalized homeownership journey has been created."
+    });
+  };
+  
+  const handleStepClick = (stepId: number) => {
+    console.log(`Step ${stepId} clicked`);
+    // Would navigate to the appropriate page in a full implementation
+  };
+
+  const toggleAIFullScreen = () => {
+    setIsAIFullScreen(!isAIFullScreen);
+  };
+
   return (
     <div className="min-h-screen bg-appNavy flex flex-col">
       <Navbar />
       
       <main className="flex-1 container py-6 px-4 md:px-6 space-y-8 pb-20 md:pb-6">
-        <WelcomeCard 
-          username="there" 
-          onStartJourney={handleStartJourney}
-          isNewUser={true}
-        />
-        
-        <div className="mt-12 text-center">
-          <h2 className="text-2xl font-bold mb-4">Your Path to Homeownership Starts Here</h2>
-          <p className="max-w-2xl mx-auto mb-8">
-            FirstHomePath helps first-time homebuyers navigate the complex journey to homeownership. 
-            From financial planning to mortgage education, we provide personalized guidance every step of the way.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="bg-appCharcoal p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-2">Financial Planning</h3>
-              <p className="mb-4">Understand your finances and create a plan to afford your dream home.</p>
-            </div>
-            <div className="bg-appCharcoal p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-2">Mortgage Education</h3>
-              <p className="mb-4">Learn about mortgage options and find the best fit for your situation.</p>
-            </div>
-            <div className="bg-appCharcoal p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-2">Home Shopping</h3>
-              <p className="mb-4">Get guidance on finding and purchasing your perfect home.</p>
-            </div>
-          </div>
-          
-          <Button 
-            onClick={handleStartJourney} 
-            className="mt-8 bg-gradient-to-r from-appBlue to-appPurple hover:opacity-90 transition-opacity"
-          >
-            Create Your Account
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        {showOnboarding ? (
+          <OnboardingForm onComplete={handleCompleteOnboarding} />
+        ) : (
+          <>
+            <WelcomeCard 
+              username={isNewUser ? "there" : "Alex"} 
+              onStartJourney={handleStartJourney}
+              isNewUser={isNewUser}
+            />
+            
+            {!isNewUser && (
+              <>
+                {isAIFullScreen ? (
+                  <div className="animate-fade-in">
+                    <AIMentor isFullScreen={isAIFullScreen} onToggleFullScreen={toggleAIFullScreen} />
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="md:col-span-1">
+                        <ProgressTracker 
+                          steps={[
+                            {
+                              id: 1,
+                              title: "Financial Assessment",
+                              description: "Complete your financial profile",
+                              icon: <DollarSign size={16} />,
+                              isComplete: true,
+                              isActive: false
+                            },
+                            {
+                              id: 2,
+                              title: "Debt Reduction Plan",
+                              description: "Create a strategy to reduce debt",
+                              icon: <Percent size={16} />,
+                              isComplete: false,
+                              isActive: true
+                            },
+                            {
+                              id: 3,
+                              title: "Savings Builder",
+                              description: "Set up your down payment savings plan",
+                              icon: null,
+                              isComplete: false,
+                              isActive: false
+                            },
+                            {
+                              id: 4,
+                              title: "Mortgage Education",
+                              description: "Learn about mortgage options",
+                              icon: <Lightbulb size={16} />,
+                              isComplete: false,
+                              isActive: false
+                            },
+                            {
+                              id: 5,
+                              title: "Home Shopping",
+                              description: "Start searching for your dream home",
+                              icon: <Home size={16} />,
+                              isComplete: false,
+                              isActive: false
+                            }
+                          ]}
+                          onStepClick={handleStepClick} 
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <FinancialSummary 
+                          monthlyIncome={5000}
+                          monthlyExpenses={3200}
+                          savings={12000}
+                          debtTotal={25000}
+                          savingsGoal={30000}
+                          creditScore={680}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                      <AIMentor isFullScreen={isAIFullScreen} onToggleFullScreen={toggleAIFullScreen} />
+                      <HomeInsights />
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </>
+        )}
       </main>
     </div>
   );
