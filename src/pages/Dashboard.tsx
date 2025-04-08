@@ -7,7 +7,8 @@ import FinancialSummary from "@/components/dashboard/FinancialSummary";
 import HomeInsights from "@/components/dashboard/HomeInsights";
 import AIMentor from "@/components/dashboard/AIMentor";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, supabase } from "../App";
+import { useAuth } from "../App";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
