@@ -5,7 +5,7 @@ import OnboardingForm from "@/components/onboarding/OnboardingForm";
 import { useAuth } from "../App";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "../App";
+import { supabase } from "@/integrations/supabase/client";
 
 const Onboarding = () => {
   const { updateOnboardingStatus } = useAuth();
