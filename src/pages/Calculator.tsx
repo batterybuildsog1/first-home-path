@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MortgageCalculator from "@/components/calculators/MortgageCalculator";
 import HomeAffordabilityCalculator from "@/components/calculators/HomeAffordabilityCalculator";
 import { Card, CardContent } from "@/components/ui/card";
-import { InfoCircle, Search } from "lucide-react";
+import { Info, Search } from "lucide-react";
 
 const Calculator = () => {
   return (
@@ -22,7 +22,7 @@ const Calculator = () => {
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <div className="bg-appPurple/20 p-2 rounded-full mt-1">
-                <InfoCircle className="h-4 w-4 text-appPurple" />
+                <Info className="h-4 w-4 text-appPurple" />
               </div>
               <div>
                 <h3 className="font-medium mb-1">New: AI-Powered Calculators</h3>

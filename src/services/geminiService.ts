@@ -1,7 +1,7 @@
 
 import { toast } from "@/hooks/use-toast";
 
-const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"; // This should be stored in environment variables
+const GEMINI_API_KEY = "AIzaSyAcHyUPpMZookNigrKWQjX7sr6zEkwVDkY"; // API key provided by user
 const MODEL_NAME = "gemini-2.5-pro-preview-03-25";
 
 interface MortgageRate {
