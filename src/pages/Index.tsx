@@ -60,7 +60,51 @@ const Index = () => {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-1">
-                    <ProgressTracker onStepClick={handleStepClick} />
+                    <ProgressTracker 
+                      steps={[
+                        {
+                          id: 1,
+                          title: "Financial Assessment",
+                          description: "Complete your financial profile",
+                          icon: <DollarSign size={16} />,
+                          isComplete: true,
+                          isActive: false
+                        },
+                        {
+                          id: 2,
+                          title: "Debt Reduction Plan",
+                          description: "Create a strategy to reduce debt",
+                          icon: <Percent size={16} />,
+                          isComplete: false,
+                          isActive: true
+                        },
+                        {
+                          id: 3,
+                          title: "Savings Builder",
+                          description: "Set up your down payment savings plan",
+                          icon: null,
+                          isComplete: false,
+                          isActive: false
+                        },
+                        {
+                          id: 4,
+                          title: "Mortgage Education",
+                          description: "Learn about mortgage options",
+                          icon: <Lightbulb size={16} />,
+                          isComplete: false,
+                          isActive: false
+                        },
+                        {
+                          id: 5,
+                          title: "Home Shopping",
+                          description: "Start searching for your dream home",
+                          icon: <Home size={16} />,
+                          isComplete: false,
+                          isActive: false
+                        }
+                      ]}
+                      onStepClick={handleStepClick} 
+                    />
                   </div>
                   <div className="md:col-span-2">
                     <FinancialSummary 
