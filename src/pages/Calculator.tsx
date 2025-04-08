@@ -1,13 +1,28 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MortgageCalculator from "@/components/calculators/MortgageCalculator";
 import HomeAffordabilityCalculator from "@/components/calculators/HomeAffordabilityCalculator";
 import { Card, CardContent } from "@/components/ui/card";
 import { Info, Search } from "lucide-react";
+import AIMentor from "@/components/dashboard/AIMentor";
 
 const Calculator = () => {
+  const [showAIMentor, setShowAIMentor] = useState(false);
+  const [isAIFullScreen, setIsAIFullScreen] = useState(false);
+
+  const toggleAIMentor = () => {
+    setShowAIMentor(!showAIMentor);
+    if (!showAIMentor) {
+      setIsAIFullScreen(false);
+    }
+  };
+
+  const toggleAIFullScreen = () => {
+    setIsAIFullScreen(!isAIFullScreen);
+  };
+
   return (
     <div className="min-h-screen bg-appNavy flex flex-col">
       <Navbar />
@@ -34,20 +49,34 @@ const Calculator = () => {
           </CardContent>
         </Card>
         
-        <Tabs defaultValue="mortgage" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:w-auto">
-            <TabsTrigger value="mortgage">Mortgage Calculator</TabsTrigger>
-            <TabsTrigger value="affordability">Affordability Calculator</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="mortgage">
-            <MortgageCalculator />
-          </TabsContent>
-          
-          <TabsContent value="affordability">
-            <HomeAffordabilityCalculator />
-          </TabsContent>
-        </Tabs>
+        {isAIFullScreen ? (
+          <div className="animate-fade-in mb-4">
+            <AIMentor isFullScreen={true} onToggleFullScreen={toggleAIFullScreen} />
+          </div>
+        ) : (
+          <Tabs defaultValue="mortgage" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <TabsList className="grid w-full grid-cols-2 md:w-auto">
+                <TabsTrigger value="mortgage">Mortgage Calculator</TabsTrigger>
+                <TabsTrigger value="affordability">Affordability Calculator</TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <TabsContent value="mortgage">
+              <MortgageCalculator />
+            </TabsContent>
+            
+            <TabsContent value="affordability">
+              <HomeAffordabilityCalculator />
+            </TabsContent>
+          </Tabs>
+        )}
+        
+        {showAIMentor && !isAIFullScreen && (
+          <div className="animate-fade-in">
+            <AIMentor isFullScreen={false} onToggleFullScreen={toggleAIFullScreen} />
+          </div>
+        )}
       </main>
     </div>
   );

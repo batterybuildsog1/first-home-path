@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
@@ -13,6 +14,7 @@ const Index = () => {
   const { toast } = useToast();
   const [isNewUser, setIsNewUser] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isAIFullScreen, setIsAIFullScreen] = useState(false);
   
   const handleStartJourney = () => {
     if (isNewUser) {
@@ -41,6 +43,10 @@ const Index = () => {
     // Would navigate to the appropriate page in a full implementation
   };
 
+  const toggleAIFullScreen = () => {
+    setIsAIFullScreen(!isAIFullScreen);
+  };
+
   return (
     <div className="min-h-screen bg-appNavy flex flex-col">
       <Navbar />
@@ -58,70 +64,78 @@ const Index = () => {
             
             {!isNewUser && (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="md:col-span-1">
-                    <ProgressTracker 
-                      steps={[
-                        {
-                          id: 1,
-                          title: "Financial Assessment",
-                          description: "Complete your financial profile",
-                          icon: <DollarSign size={16} />,
-                          isComplete: true,
-                          isActive: false
-                        },
-                        {
-                          id: 2,
-                          title: "Debt Reduction Plan",
-                          description: "Create a strategy to reduce debt",
-                          icon: <Percent size={16} />,
-                          isComplete: false,
-                          isActive: true
-                        },
-                        {
-                          id: 3,
-                          title: "Savings Builder",
-                          description: "Set up your down payment savings plan",
-                          icon: null,
-                          isComplete: false,
-                          isActive: false
-                        },
-                        {
-                          id: 4,
-                          title: "Mortgage Education",
-                          description: "Learn about mortgage options",
-                          icon: <Lightbulb size={16} />,
-                          isComplete: false,
-                          isActive: false
-                        },
-                        {
-                          id: 5,
-                          title: "Home Shopping",
-                          description: "Start searching for your dream home",
-                          icon: <Home size={16} />,
-                          isComplete: false,
-                          isActive: false
-                        }
-                      ]}
-                      onStepClick={handleStepClick} 
-                    />
+                {isAIFullScreen ? (
+                  <div className="animate-fade-in">
+                    <AIMentor isFullScreen={isAIFullScreen} onToggleFullScreen={toggleAIFullScreen} />
                   </div>
-                  <div className="md:col-span-2">
-                    <FinancialSummary 
-                      monthlyIncome={5000}
-                      monthlyExpenses={3200}
-                      savings={12000}
-                      debtTotal={25000}
-                      savingsGoal={30000}
-                      creditScore={680}
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <HomeInsights />
-                  <AIMentor />
-                </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="md:col-span-1">
+                        <ProgressTracker 
+                          steps={[
+                            {
+                              id: 1,
+                              title: "Financial Assessment",
+                              description: "Complete your financial profile",
+                              icon: <DollarSign size={16} />,
+                              isComplete: true,
+                              isActive: false
+                            },
+                            {
+                              id: 2,
+                              title: "Debt Reduction Plan",
+                              description: "Create a strategy to reduce debt",
+                              icon: <Percent size={16} />,
+                              isComplete: false,
+                              isActive: true
+                            },
+                            {
+                              id: 3,
+                              title: "Savings Builder",
+                              description: "Set up your down payment savings plan",
+                              icon: null,
+                              isComplete: false,
+                              isActive: false
+                            },
+                            {
+                              id: 4,
+                              title: "Mortgage Education",
+                              description: "Learn about mortgage options",
+                              icon: <Lightbulb size={16} />,
+                              isComplete: false,
+                              isActive: false
+                            },
+                            {
+                              id: 5,
+                              title: "Home Shopping",
+                              description: "Start searching for your dream home",
+                              icon: <Home size={16} />,
+                              isComplete: false,
+                              isActive: false
+                            }
+                          ]}
+                          onStepClick={handleStepClick} 
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <FinancialSummary 
+                          monthlyIncome={5000}
+                          monthlyExpenses={3200}
+                          savings={12000}
+                          debtTotal={25000}
+                          savingsGoal={30000}
+                          creditScore={680}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                      <AIMentor isFullScreen={isAIFullScreen} onToggleFullScreen={toggleAIFullScreen} />
+                      <HomeInsights />
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>

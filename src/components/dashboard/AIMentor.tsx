@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Dialog,
   DialogContent,
@@ -12,7 +13,18 @@ import {
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Send, MessageSquare, ThumbsUp, ThumbsDown, Lightbulb, FileText, ArrowRight, Search } from "lucide-react";
+import { 
+  Send, 
+  MessageSquare, 
+  ThumbsUp, 
+  ThumbsDown, 
+  Lightbulb, 
+  FileText, 
+  ArrowRight, 
+  Search,
+  Maximize,
+  Minimize
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { chatWithGemini } from "@/services/geminiService";
 import { Switch } from "@/components/ui/switch";
@@ -32,7 +44,15 @@ interface FinancialTip {
   category: "savings" | "debt" | "mortgage" | "credit";
 }
 
-const AIMentor: React.FC = () => {
+interface AIMentorProps {
+  isFullScreen?: boolean;
+  onToggleFullScreen?: () => void;
+}
+
+const AIMentor: React.FC<AIMentorProps> = ({ 
+  isFullScreen = false, 
+  onToggleFullScreen 
+}) => {
   const { toast } = useToast();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -169,11 +189,22 @@ const AIMentor: React.FC = () => {
   };
 
   return (
-    <Card className="border-muted/30 bg-appNavy">
-      <CardHeader>
+    <Card className={`border-muted/30 bg-appNavy ${isFullScreen ? 'animate-fade-in' : ''}`}>
+      <CardHeader className="relative">
         <CardTitle className="text-xl flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-appPurple" />
           AI Financial Mentor
+          {onToggleFullScreen && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto"
+              onClick={onToggleFullScreen}
+              title={isFullScreen ? "Minimize" : "Maximize"}
+            >
+              {isFullScreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            </Button>
+          )}
         </CardTitle>
         <CardDescription className="flex justify-between items-center">
           <span>Ask questions about finances, mortgages, or home buying</span>
@@ -189,60 +220,62 @@ const AIMentor: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col h-[340px]">
-          <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
+        <div className={`flex flex-col ${isFullScreen ? 'h-[70vh]' : 'h-[340px]'}`}>
+          <ScrollArea className="flex-1 mb-4 pr-2">
+            <div className="space-y-4">
+              {messages.map((message) => (
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
+                  key={message.id}
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
-                  {message.role === "ai" && (
-                    <div className="flex justify-end gap-2 mt-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6"
-                        onClick={() => handleFeedback(true)}
-                      >
-                        <ThumbsUp className="h-3 w-3" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6"
-                        onClick={() => handleFeedback(false)}
-                      >
-                        <ThumbsDown className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            {isAnalyzing && (
-              <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-lg p-3 bg-muted text-foreground">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 bg-appPurple rounded-full animate-pulse"></div>
-                    <div className="h-2 w-2 bg-appPurple rounded-full animate-pulse delay-150"></div>
-                    <div className="h-2 w-2 bg-appPurple rounded-full animate-pulse delay-300"></div>
-                    <span className="text-xs text-muted-foreground">Analyzing your question with Gemini...</span>
+                  <div
+                    className={`max-w-[80%] rounded-lg p-3 ${
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                    {message.role === "ai" && (
+                      <div className="flex justify-end gap-2 mt-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6"
+                          onClick={() => handleFeedback(true)}
+                        >
+                          <ThumbsUp className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6"
+                          onClick={() => handleFeedback(false)}
+                        >
+                          <ThumbsDown className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+              ))}
+              {isAnalyzing && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] rounded-lg p-3 bg-muted text-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 bg-appPurple rounded-full animate-pulse"></div>
+                      <div className="h-2 w-2 bg-appPurple rounded-full animate-pulse delay-150"></div>
+                      <div className="h-2 w-2 bg-appPurple rounded-full animate-pulse delay-300"></div>
+                      <span className="text-xs text-muted-foreground">Analyzing your question with Gemini...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
           
           {financialTips.length > 0 && (
             <>
