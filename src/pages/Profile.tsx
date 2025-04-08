@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { 
@@ -13,15 +14,7 @@ import {
   TabsList, 
   TabsTrigger 
 } from "@/components/ui/tabs";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -124,7 +117,7 @@ const Profile = () => {
                 <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleSaveProfile(); }}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <FormLabel>First Name</FormLabel>
+                      <Label>First Name</Label>
                       <Input
                         disabled={!isEditing}
                         defaultValue="Alex"
@@ -132,7 +125,7 @@ const Profile = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <FormLabel>Last Name</FormLabel>
+                      <Label>Last Name</Label>
                       <Input
                         disabled={!isEditing}
                         defaultValue="Smith"
@@ -140,7 +133,7 @@ const Profile = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <FormLabel>Email</FormLabel>
+                      <Label>Email</Label>
                       <Input
                         disabled={!isEditing}
                         defaultValue="alex.smith@example.com"
@@ -149,7 +142,7 @@ const Profile = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <FormLabel>Phone</FormLabel>
+                      <Label>Phone</Label>
                       <Input
                         disabled={!isEditing}
                         defaultValue="(555) 123-4567"
@@ -162,7 +155,7 @@ const Profile = () => {
                   <Separator className="bg-muted/50" />
                   
                   <div className="space-y-2">
-                    <FormLabel>Address</FormLabel>
+                    <Label>Address</Label>
                     <Input
                       disabled={!isEditing}
                       defaultValue="123 Main Street"
@@ -172,7 +165,7 @@ const Profile = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                      <FormLabel>City</FormLabel>
+                      <Label>City</Label>
                       <Input
                         disabled={!isEditing}
                         defaultValue="San Francisco"
@@ -180,7 +173,7 @@ const Profile = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <FormLabel>State</FormLabel>
+                      <Label>State</Label>
                       <Input
                         disabled={!isEditing}
                         defaultValue="CA"
@@ -188,7 +181,7 @@ const Profile = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <FormLabel>ZIP Code</FormLabel>
+                      <Label>ZIP Code</Label>
                       <Input
                         disabled={!isEditing}
                         defaultValue="94105"
