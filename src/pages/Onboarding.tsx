@@ -5,7 +5,6 @@ import OnboardingForm from "@/components/onboarding/OnboardingForm";
 import { useAuth } from "../App";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 const Onboarding = () => {
   const { updateOnboardingStatus } = useAuth();
@@ -14,30 +13,9 @@ const Onboarding = () => {
   
   const handleCompleteOnboarding = async (userData: any) => {
     try {
-      // Save user data to Supabase
-      const { data: user } = await supabase.auth.getUser();
-      
-      if (!user.user) {
-        throw new Error("User not authenticated");
-      }
-      
-      // Save financial data
-      const { error: financialError } = await supabase
-        .from('financial_profiles')
-        .upsert({
-          user_id: user.user.id,
-          income: parseFloat(userData.income.replace(/[^0-9.]/g, '')),
-          savings: parseFloat(userData.savings.replace(/[^0-9.]/g, '')),
-          credit_score: userData.creditScore,
-          total_debt: parseFloat(userData.debt.replace(/[^0-9.]/g, '')),
-          location: {
-            city: userData.city,
-            state: userData.state,
-            zip_code: userData.zipCode
-          }
-        });
-      
-      if (financialError) throw financialError;
+      // For now, we'll just store the data in memory and mark onboarding as complete
+      // Later, we'll implement the database storage functionality
+      console.log("Onboarding data:", userData);
       
       // Mark onboarding as complete
       await updateOnboardingStatus(true);

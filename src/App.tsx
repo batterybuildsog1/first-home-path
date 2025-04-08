@@ -55,14 +55,9 @@ const App = () => {
       
       if (data.session) {
         setUser(data.session.user);
-        // Check if user has completed onboarding
-        const { data: profileData } = await supabase
-          .from('user_profiles')
-          .select('has_completed_onboarding')
-          .eq('user_id', data.session.user.id)
-          .single();
-        
-        setHasCompletedOnboarding(profileData?.has_completed_onboarding || false);
+        // For now, assume no onboarding has been completed
+        // We'll properly implement this once tables are created
+        setHasCompletedOnboarding(false);
       }
       
       setIsLoading(false);
@@ -74,15 +69,9 @@ const App = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         setUser(session.user);
-        
-        // Check if user has completed onboarding
-        const { data: profileData } = await supabase
-          .from('user_profiles')
-          .select('has_completed_onboarding')
-          .eq('user_id', session.user.id)
-          .single();
-        
-        setHasCompletedOnboarding(profileData?.has_completed_onboarding || false);
+        // For now, assume no onboarding has been completed
+        // We'll properly implement this once tables are created
+        setHasCompletedOnboarding(false);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setHasCompletedOnboarding(null);
@@ -103,6 +92,12 @@ const App = () => {
   const updateOnboardingStatus = async (completed: boolean) => {
     if (!user) return;
     
+    // For now, just update the local state
+    // We'll properly implement database updates once tables are created
+    setHasCompletedOnboarding(completed);
+    
+    // TODO: Once user_profiles table is created, uncomment this code:
+    /*
     const { error } = await supabase
       .from('user_profiles')
       .upsert({ 
@@ -114,8 +109,7 @@ const App = () => {
       console.error("Error updating onboarding status:", error);
       return;
     }
-    
-    setHasCompletedOnboarding(completed);
+    */
   };
 
   return (
