@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { fetchMortgageRates, fetchPropertyTaxRate, fetchHomeInsuranceEstimate } from "@/services/geminiService";
 import { useToast } from "@/hooks/use-toast";
+import { Search } from "lucide-react";
 
 const MortgageCalculator: React.FC = () => {
   const { toast } = useToast();
@@ -31,37 +32,6 @@ const MortgageCalculator: React.FC = () => {
   const [interest, setInterest] = useState(0);
   const [tax, setTax] = useState(0);
   const [insurance, setInsurance] = useState(0);
-  
-  // Fetch current mortgage rates on component mount
-  useEffect(() => {
-    const getRates = async () => {
-      setIsLoadingRates(true);
-      const ratesData = await fetchMortgageRates();
-      setIsLoadingRates(false);
-      
-      if (ratesData) {
-        // Find the relevant rate based on loan type
-        const fhaRate = ratesData.mortgage_rates.rates.find(r => r.loan_type === "30-Year FHA");
-        const conventionalRate = ratesData.mortgage_rates.rates.find(r => r.loan_type === "30-Year Conventional");
-        
-        if (loanType === "fha" && fhaRate) {
-          setInterestRate(parseFloat(fhaRate.rate.replace('%', '')));
-          toast({
-            title: "FHA Rate Updated",
-            description: `Current rate: ${fhaRate.rate} as of ${ratesData.mortgage_rates.date}`
-          });
-        } else if (loanType === "conventional" && conventionalRate) {
-          setInterestRate(parseFloat(conventionalRate.rate.replace('%', '')));
-          toast({
-            title: "Conventional Rate Updated",
-            description: `Current rate: ${conventionalRate.rate} as of ${ratesData.mortgage_rates.date}`
-          });
-        }
-      }
-    };
-    
-    getRates();
-  }, [loanType]);
   
   // Update downPayment when percentage changes
   useEffect(() => {
@@ -97,6 +67,33 @@ const MortgageCalculator: React.FC = () => {
     setInsurance(Math.round(monthlyInsurance));
     setMonthlyPayment(Math.round(total));
   }, [homePrice, downPayment, loanTerm, interestRate, propertyTax, homeInsurance]);
+  
+  // Function to fetch current mortgage rates
+  const getRates = async () => {
+    setIsLoadingRates(true);
+    const ratesData = await fetchMortgageRates();
+    setIsLoadingRates(false);
+    
+    if (ratesData) {
+      // Find the relevant rate based on loan type
+      const fhaRate = ratesData.mortgage_rates.rates.find(r => r.loan_type === "30-Year FHA");
+      const conventionalRate = ratesData.mortgage_rates.rates.find(r => r.loan_type === "30-Year Conventional");
+      
+      if (loanType === "fha" && fhaRate) {
+        setInterestRate(parseFloat(fhaRate.rate.replace('%', '')));
+        toast({
+          title: "FHA Rate Updated",
+          description: `Current rate: ${fhaRate.rate} as of ${ratesData.mortgage_rates.date}`
+        });
+      } else if (loanType === "conventional" && conventionalRate) {
+        setInterestRate(parseFloat(conventionalRate.rate.replace('%', '')));
+        toast({
+          title: "Conventional Rate Updated",
+          description: `Current rate: ${conventionalRate.rate} as of ${ratesData.mortgage_rates.date}`
+        });
+      }
+    }
+  };
   
   // Fetch location-based property tax and insurance data
   const fetchLocationData = async () => {
@@ -272,11 +269,11 @@ const MortgageCalculator: React.FC = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="mt-1 text-xs"
-                onClick={() => fetchMortgageRates()}
+                className="mt-1 text-xs flex items-center gap-1"
+                onClick={getRates}
                 disabled={isLoadingRates}
               >
-                Get Current Rate
+                <Search className="h-3 w-3" /> Get Current Rate
               </Button>
             </div>
             
@@ -299,10 +296,10 @@ const MortgageCalculator: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="mt-1 text-xs"
+                  className="mt-1 text-xs flex items-center gap-1"
                   onClick={fetchLocationData}
                 >
-                  Get Local Rates
+                  <Search className="h-3 w-3" /> Get Local Rates
                 </Button>
               </div>
             </div>

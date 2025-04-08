@@ -28,7 +28,10 @@ export interface PropertyTaxInfo {
  */
 export const fetchMortgageRates = async (): Promise<MortgageRatesResponse | null> => {
   try {
-    const prompt = `use search to gather todays mortgage interest rates from mortgage news daily, 2 rates specifically 30 year FHA and 30 year conventional output a structured json format in return exactly as below:
+    const prompt = `Use search to gather today's mortgage interest rates from Mortgage News Daily, 
+    2 rates specifically 30 year FHA and 30 year conventional.
+    
+    Output a structured json format in return exactly as below:
     
     {
       "mortgage_rates": {
@@ -46,9 +49,11 @@ export const fetchMortgageRates = async (): Promise<MortgageRatesResponse | null
           }
         ]
       }
-    }`;
+    }
+    
+    Only respond with valid JSON, no markdown formatting, no code blocks, nothing else.`;
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + MODEL_NAME + ":generateContent", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -64,7 +69,13 @@ export const fetchMortgageRates = async (): Promise<MortgageRatesResponse | null
         },
         tools: [{
           googleSearchRetrieval: {}
-        }]
+        }],
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_NONE"
+          }
+        ]
       })
     });
 
@@ -74,8 +85,10 @@ export const fetchMortgageRates = async (): Promise<MortgageRatesResponse | null
 
     const data = await response.json();
     
-    // Extract the JSON from the response text (Gemini might wrap it in markdown)
+    // Extract the text from the response
     const responseText = data.candidates[0].content.parts[0].text;
+    
+    // Clean up markdown formatting if present
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     
     if (jsonMatch) {
@@ -104,14 +117,19 @@ export const fetchPropertyTaxRate = async (state: string, zipCode?: string): Pro
       locationQuery = `${zipCode}, ${state}`;
     }
     
-    const prompt = `Use search to find the average property tax rate for ${locationQuery}. If possible, also find county-specific rates for this location. Return only a JSON object with this structure:
+    const prompt = `Use search to find the average property tax rate for ${locationQuery}. 
+    If possible, also find county-specific rates for this location. 
+    
+    Return only a JSON object with this structure:
     {
       "state": "${state}",
       "average_rate": "", 
       "county_rate": ""
-    }`;
+    }
+    
+    Only respond with valid JSON, no markdown formatting, no code blocks, nothing else.`;
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + MODEL_NAME + ":generateContent", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -127,7 +145,13 @@ export const fetchPropertyTaxRate = async (state: string, zipCode?: string): Pro
         },
         tools: [{
           googleSearchRetrieval: {}
-        }]
+        }],
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_NONE"
+          }
+        ]
       })
     });
 
@@ -137,8 +161,10 @@ export const fetchPropertyTaxRate = async (state: string, zipCode?: string): Pro
 
     const data = await response.json();
     
-    // Extract the JSON from the response text
+    // Extract the text from the response
     const responseText = data.candidates[0].content.parts[0].text;
+    
+    // Clean up markdown formatting if present
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     
     if (jsonMatch) {
@@ -161,9 +187,12 @@ export const fetchHomeInsuranceEstimate = async (
   homeValue: number
 ): Promise<number | null> => {
   try {
-    const prompt = `Use search to find the average annual home insurance cost for a ${homeValue} dollar home in ${zipCode}, ${state}. Return only a number representing the estimated annual cost in dollars.`;
+    const prompt = `Use search to find the average annual home insurance cost for a ${homeValue.toLocaleString()} dollar home in ${zipCode}, ${state}. 
+    Return only a number representing the estimated annual cost in dollars.
+    
+    Only respond with the number, no text, no formatting, nothing else.`;
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + MODEL_NAME + ":generateContent", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -179,7 +208,13 @@ export const fetchHomeInsuranceEstimate = async (
         },
         tools: [{
           googleSearchRetrieval: {}
-        }]
+        }],
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_NONE"
+          }
+        ]
       })
     });
 
@@ -223,7 +258,13 @@ export const chatWithGemini = async (
         topK: 32,
         topP: 1,
         maxOutputTokens: 4096,
-      }
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_NONE"
+        }
+      ]
     };
 
     // Add search grounding if requested
@@ -233,7 +274,7 @@ export const chatWithGemini = async (
       }];
     }
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + MODEL_NAME + ":generateContent", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
