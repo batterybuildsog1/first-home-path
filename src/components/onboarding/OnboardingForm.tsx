@@ -31,8 +31,21 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
     creditScore: "",
     debt: "",
     homeGoal: "6-12 months",
-    location: "",
+    city: "",
+    state: "",
+    zipCode: ""
   });
+
+  // List of US states for the dropdown
+  const states = [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
+    "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", 
+    "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", 
+    "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
+    "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", 
+    "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", 
+    "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+  ];
 
   const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
@@ -74,6 +87,26 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         toast({
           title: "Invalid Email",
           description: "Please provide a valid email address.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Validate location fields
+      if (formData.zipCode && !/^\d{5}(-\d{4})?$/.test(formData.zipCode)) {
+        toast({
+          title: "Invalid Zip Code",
+          description: "Please enter a valid 5-digit zip code.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Require at least city or zip code
+      if (!formData.city && !formData.zipCode) {
+        toast({
+          title: "Location Required",
+          description: "Please provide either a city or zip code for your home search area.",
           variant: "destructive",
         });
         return false;
@@ -154,15 +187,50 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
                   onChange={handleInputChange}
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="location">Where are you looking to buy a home?</Label>
-                <Input
-                  id="location"
-                  name="location"
-                  placeholder="City, State"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                />
+                <Label>Where are you looking to buy a home?</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="city" className="text-xs">City</Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      placeholder="City"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="state" className="text-xs">State</Label>
+                    <Select 
+                      value={formData.state} 
+                      onValueChange={(value) => handleSelectChange("state", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {states.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1 col-span-2">
+                    <Label htmlFor="zipCode" className="text-xs">Zip Code</Label>
+                    <Input
+                      id="zipCode"
+                      name="zipCode"
+                      placeholder="12345"
+                      value={formData.zipCode}
+                      onChange={handleInputChange}
+                      maxLength={5}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           )}
