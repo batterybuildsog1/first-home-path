@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,7 +45,6 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
     zipCode: ""
   });
 
-  // List of US states for the dropdown
   const states = [
     "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
     "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", 
@@ -57,7 +55,6 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
     "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
   ];
 
-  // Credit score ranges
   const creditScoreRanges = [
     "Below 550",
     "550-579",
@@ -99,7 +96,6 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
   };
 
   const validateStep = () => {
-    // Basic validation for each step
     if (step === 1) {
       if (!formData.name || !formData.email) {
         toast({
@@ -109,7 +105,6 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         });
         return false;
       }
-      // Basic email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         toast({
@@ -120,7 +115,6 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         return false;
       }
       
-      // Validate location fields
       if (formData.zipCode && !/^\d{5}(-\d{4})?$/.test(formData.zipCode)) {
         toast({
           title: "Invalid Zip Code",
@@ -130,7 +124,6 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         return false;
       }
       
-      // Require at least city or zip code
       if (!formData.city && !formData.zipCode) {
         toast({
           title: "Location Required",
@@ -149,7 +142,6 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         return false;
       }
     } else if (step === 3) {
-      // At least one debt field should be filled, or explicitly set to 0 if they have no debt
       if (!formData.debtCarPayment && 
           !formData.debtCreditCards && 
           !formData.debtStudentLoans && 
@@ -169,12 +161,10 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Important: Validate the current step before submission
     if (!validateStep()) return;
     
     setIsSubmitting(true);
     
-    // Combine debt fields for backward compatibility with existing dashboard
     const totalDebt = [
       formData.debtCarPayment || "0",
       formData.debtCreditCards || "0",
@@ -191,7 +181,6 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
       debt: totalDebt
     };
     
-    // Simulate API call delay
     setTimeout(() => {
       setIsSubmitting(false);
       onComplete(processedData);
@@ -292,10 +281,10 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-5 w-5 p-0">
+                        <span className="cursor-help">
                           <HelpCircle className="h-4 w-4" />
                           <span className="sr-only">Income information</span>
-                        </Button>
+                        </span>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
                         <p>For mortgage purposes, this is your income AND your co-borrower, spouse, significant other or non-occupant co-borrower, etc.</p>
@@ -451,7 +440,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Button>
             ) : (
-              <div></div> // Empty div to maintain spacing
+              <div></div>
             )}
 
             {step < totalSteps ? (
