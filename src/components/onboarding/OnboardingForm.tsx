@@ -68,11 +68,31 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         });
         return false;
       }
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please provide a valid email address.",
+          variant: "destructive",
+        });
+        return false;
+      }
     } else if (step === 2) {
       if (!formData.income || !formData.savings || !formData.creditScore) {
         toast({
           title: "Missing Financial Information",
           description: "Please complete all financial fields to continue.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } else if (step === 3) {
+      // This validation was missing for the final step
+      if (!formData.debt) {
+        toast({
+          title: "Missing Debt Information",
+          description: "Please provide your monthly debt payments to continue.",
           variant: "destructive",
         });
         return false;
@@ -84,6 +104,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Important: Validate the current step before submission
     if (!validateStep()) return;
     
     setIsSubmitting(true);
