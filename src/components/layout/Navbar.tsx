@@ -19,11 +19,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChevronDown, Home, Calculator, PiggyBank, DollarSign, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "../../App";
 
 const Navbar = () => {
-  const isMobile = useIsMobile();
+  const { isMobile } = useMobile();
   const [menuOpen, setMenuOpen] = React.useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();

@@ -1,9 +1,11 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { createContext, useContext, useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 import Index from "./pages/Index";
 import Finances from "./pages/Finances";
 import Savings from "./pages/Savings";
@@ -13,7 +15,11 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
-import { supabase } from "@/integrations/supabase/client";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 type AuthContextType = {
   user: any | null;
