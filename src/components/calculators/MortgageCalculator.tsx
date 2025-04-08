@@ -5,9 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { fetchMortgageRates, fetchPropertyTaxRate, fetchHomeInsuranceEstimate } from "@/services/geminiService";
+import { useToast } from "@/hooks/use-toast";
 
 const MortgageCalculator: React.FC = () => {
+  const { toast } = useToast();
   const [homePrice, setHomePrice] = useState(300000);
   const [downPayment, setDownPayment] = useState(60000);
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
@@ -15,12 +19,49 @@ const MortgageCalculator: React.FC = () => {
   const [interestRate, setInterestRate] = useState(5.5);
   const [propertyTax, setPropertyTax] = useState(1.2);
   const [homeInsurance, setHomeInsurance] = useState(1200);
+  const [isLoadingRates, setIsLoadingRates] = useState(false);
+  const [loanType, setLoanType] = useState("conventional");
+  const [location, setLocation] = useState({
+    state: "",
+    zipCode: ""
+  });
   
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [principal, setPrincipal] = useState(0);
   const [interest, setInterest] = useState(0);
   const [tax, setTax] = useState(0);
   const [insurance, setInsurance] = useState(0);
+  
+  // Fetch current mortgage rates on component mount
+  useEffect(() => {
+    const getRates = async () => {
+      setIsLoadingRates(true);
+      const ratesData = await fetchMortgageRates();
+      setIsLoadingRates(false);
+      
+      if (ratesData) {
+        // Find the relevant rate based on loan type
+        const fhaRate = ratesData.mortgage_rates.rates.find(r => r.loan_type === "30-Year FHA");
+        const conventionalRate = ratesData.mortgage_rates.rates.find(r => r.loan_type === "30-Year Conventional");
+        
+        if (loanType === "fha" && fhaRate) {
+          setInterestRate(parseFloat(fhaRate.rate.replace('%', '')));
+          toast({
+            title: "FHA Rate Updated",
+            description: `Current rate: ${fhaRate.rate} as of ${ratesData.mortgage_rates.date}`
+          });
+        } else if (loanType === "conventional" && conventionalRate) {
+          setInterestRate(parseFloat(conventionalRate.rate.replace('%', '')));
+          toast({
+            title: "Conventional Rate Updated",
+            description: `Current rate: ${conventionalRate.rate} as of ${ratesData.mortgage_rates.date}`
+          });
+        }
+      }
+    };
+    
+    getRates();
+  }, [loanType]);
   
   // Update downPayment when percentage changes
   useEffect(() => {
@@ -56,6 +97,54 @@ const MortgageCalculator: React.FC = () => {
     setInsurance(Math.round(monthlyInsurance));
     setMonthlyPayment(Math.round(total));
   }, [homePrice, downPayment, loanTerm, interestRate, propertyTax, homeInsurance]);
+  
+  // Fetch location-based property tax and insurance data
+  const fetchLocationData = async () => {
+    if (!location.state) {
+      toast({
+        title: "Location Required",
+        description: "Please enter a state to get local tax and insurance rates.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    toast({
+      title: "Fetching Data",
+      description: "Getting local property tax and insurance rates..."
+    });
+    
+    // Get property tax rate
+    const taxInfo = await fetchPropertyTaxRate(location.state, location.zipCode);
+    if (taxInfo && taxInfo.average_rate) {
+      // Convert percentage string to number (removing % sign)
+      const taxRate = parseFloat(taxInfo.average_rate.replace('%', ''));
+      if (!isNaN(taxRate)) {
+        setPropertyTax(taxRate);
+        toast({
+          title: "Property Tax Updated",
+          description: `Average rate for ${location.state}: ${taxInfo.average_rate}`
+        });
+      }
+    }
+    
+    // Get insurance estimate if zipcode is provided
+    if (location.zipCode && location.state) {
+      const insuranceEstimate = await fetchHomeInsuranceEstimate(
+        location.state,
+        location.zipCode,
+        homePrice
+      );
+      
+      if (insuranceEstimate) {
+        setHomeInsurance(insuranceEstimate);
+        toast({
+          title: "Insurance Estimate Updated",
+          description: `Estimated annual cost: $${insuranceEstimate.toLocaleString()}`
+        });
+      }
+    }
+  };
   
   // Prepare data for pie chart
   const data = [
@@ -125,34 +214,97 @@ const MortgageCalculator: React.FC = () => {
               />
             </div>
             
-            {/* Loan Term */}
-            <div className="space-y-2">
-              <Label htmlFor="loanTerm">Loan Term</Label>
-              <Select 
-                value={loanTerm.toString()} 
-                onValueChange={(value) => setLoanTerm(Number(value))}
-              >
-                <SelectTrigger id="loanTerm">
-                  <SelectValue placeholder="Select term" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="15">15 years</SelectItem>
-                  <SelectItem value="20">20 years</SelectItem>
-                  <SelectItem value="30">30 years</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Loan Type & Term */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="loanType">Loan Type</Label>
+                <Select 
+                  value={loanType} 
+                  onValueChange={setLoanType}
+                >
+                  <SelectTrigger id="loanType">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="conventional">Conventional</SelectItem>
+                    <SelectItem value="fha">FHA</SelectItem>
+                    <SelectItem value="va">VA</SelectItem>
+                    <SelectItem value="usda">USDA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="loanTerm">Loan Term</Label>
+                <Select 
+                  value={loanTerm.toString()} 
+                  onValueChange={(value) => setLoanTerm(Number(value))}
+                >
+                  <SelectTrigger id="loanTerm">
+                    <SelectValue placeholder="Select term" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15">15 years</SelectItem>
+                    <SelectItem value="20">20 years</SelectItem>
+                    <SelectItem value="30">30 years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             {/* Interest Rate */}
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Label htmlFor="interestRate">Interest Rate (%)</Label>
-              <Input
-                id="interestRate"
-                type="number"
-                value={interestRate}
-                onChange={(e) => setInterestRate(Number(e.target.value))}
-                step={0.1}
-              />
+              <div className="relative">
+                <Input
+                  id="interestRate"
+                  type="number"
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(Number(e.target.value))}
+                  step={0.1}
+                  className={isLoadingRates ? "pr-10" : ""}
+                />
+                {isLoadingRates && (
+                  <div className="absolute right-3 inset-y-0 flex items-center">
+                    <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-1 text-xs"
+                onClick={() => fetchMortgageRates()}
+                disabled={isLoadingRates}
+              >
+                Get Current Rate
+              </Button>
+            </div>
+            
+            {/* Location for Property Tax & Insurance */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Location (for local rates)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="State (e.g. California)"
+                    value={location.state}
+                    onChange={(e) => setLocation({...location, state: e.target.value})}
+                  />
+                  <Input
+                    placeholder="ZIP Code (optional)"
+                    value={location.zipCode}
+                    onChange={(e) => setLocation({...location, zipCode: e.target.value})}
+                  />
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-1 text-xs"
+                  onClick={fetchLocationData}
+                >
+                  Get Local Rates
+                </Button>
+              </div>
             </div>
             
             {/* Property Tax & Insurance */}

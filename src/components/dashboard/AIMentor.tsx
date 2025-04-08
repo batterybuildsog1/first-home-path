@@ -10,11 +10,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Send, MessageSquare, ThumbsUp, ThumbsDown, Lightbulb, FileText, ArrowRight } from "lucide-react";
+import { Send, MessageSquare, ThumbsUp, ThumbsDown, Lightbulb, FileText, ArrowRight, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { chatWithGemini } from "@/services/geminiService";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Message {
   id: string;
@@ -36,13 +38,14 @@ const AIMentor: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content: "Hi there! I'm your AI financial mentor. I can help answer questions about home buying, saving strategies, or improving your finances. What would you like to know?",
+      content: "Hi there! I'm your AI financial mentor powered by Gemini 2.5 Pro. I can help answer questions about home buying, saving strategies, or improving your finances. What would you like to know?",
       role: "ai",
       timestamp: new Date(),
     },
   ]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showFinancialReport, setShowFinancialReport] = useState(false);
+  const [useSearchGrounding, setUseSearchGrounding] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -81,7 +84,7 @@ const AIMentor: React.FC = () => {
     },
   ];
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!input.trim()) return;
     
     // Add user message
@@ -96,31 +99,23 @@ const AIMentor: React.FC = () => {
     setInput("");
     setIsAnalyzing(true);
     
-    // Simulate AI response (in a real app, this would call an API)
-    setTimeout(() => {
-      const aiResponses: {[key: string]: string} = {
-        "mortgage": "Conventional mortgages typically require a 20% down payment to avoid PMI, but there are FHA loans that allow as little as 3.5% down. Your ideal mortgage type depends on your credit score, savings, and long-term plans.",
-        "save": "The fastest way to save for a down payment is to reduce your largest expenses - consider a roommate to split rent, minimize eating out, and automate transfers to your savings account on payday.",
-        "credit": "To improve your credit score quickly: pay down credit card balances below 30% utilization, don't close old accounts, check your report for errors, and ensure all payments are made on time.",
-        "afford": "Rather than looking at the maximum loan you qualify for, calculate what you can comfortably afford by keeping your housing payment (including taxes and insurance) below 28% of your monthly income.",
-        "debt": "Focus on high-interest debt first using the avalanche method. This saves you the most money long-term. If you need psychological wins, the snowball method of paying smallest debts first can help maintain motivation.",
-        "fha": "FHA loans are great for first-time buyers with lower credit scores or limited savings. They require just 3.5% down with a 580+ credit score but include mandatory mortgage insurance for the life of the loan in most cases.",
-        "budget": "The 50/30/20 budget is effective for homebuyers: 50% on needs (including housing), 30% on wants, and 20% on savings and debt repayment. As you prepare to buy, consider temporarily shifting more to savings.",
-        "closing costs": "Budget 2-5% of your loan amount for closing costs. These include lender fees, title insurance, appraisals, and prepaid expenses like property taxes and homeowners insurance."
-      };
-      
-      setIsAnalyzing(false);
-      
-      // Check input for keywords and provide relevant response
-      let aiResponse = "I'd be happy to help with that! To give you the most personalized advice, could you provide more details about your specific situation?";
-      
-      const lowercaseInput = input.toLowerCase();
-      for (const [keyword, response] of Object.entries(aiResponses)) {
-        if (lowercaseInput.includes(keyword)) {
-          aiResponse = response;
-          break;
-        }
-      }
+    // Convert messages for Gemini API format
+    const messageHistory = messages
+      .filter(msg => msg.id !== "welcome") // Skip welcome message if needed
+      .map(msg => ({
+        role: msg.role === "user" ? "user" : "model",
+        content: msg.content
+      }));
+    
+    // Add the current user message
+    messageHistory.push({
+      role: "user",
+      content: input
+    });
+    
+    try {
+      // Get response from Gemini
+      const aiResponse = await chatWithGemini(messageHistory, useSearchGrounding);
       
       const newAiMessage: Message = {
         id: Date.now().toString(),
@@ -130,7 +125,27 @@ const AIMentor: React.FC = () => {
       };
       
       setMessages((prev) => [...prev, newAiMessage]);
-    }, 1500);
+    } catch (error) {
+      console.error("Error with AI response:", error);
+      
+      // Fallback message in case of error
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        content: "I'm sorry, I encountered an error while processing your request. Please try again later.",
+        role: "ai",
+        timestamp: new Date(),
+      };
+      
+      setMessages((prev) => [...prev, errorMessage]);
+      
+      toast({
+        title: "Error",
+        description: "Failed to get response from AI. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -221,7 +236,7 @@ const AIMentor: React.FC = () => {
                     <div className="h-2 w-2 bg-appPurple rounded-full animate-pulse"></div>
                     <div className="h-2 w-2 bg-appPurple rounded-full animate-pulse delay-150"></div>
                     <div className="h-2 w-2 bg-appPurple rounded-full animate-pulse delay-300"></div>
-                    <span className="text-xs text-muted-foreground">Analyzing your question...</span>
+                    <span className="text-xs text-muted-foreground">Analyzing your question with Gemini...</span>
                   </div>
                 </div>
               </div>
@@ -249,18 +264,32 @@ const AIMentor: React.FC = () => {
             </>
           )}
           
-          <div className="flex gap-2">
-            <Input
-              className="flex-1"
-              placeholder="Ask about mortgages, saving strategies, or finances..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isAnalyzing}
-            />
-            <Button onClick={handleSendMessage} disabled={!input.trim() || isAnalyzing}>
-              <Send className="h-4 w-4" />
-            </Button>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 mb-2">
+              <Switch
+                id="search-grounding"
+                checked={useSearchGrounding}
+                onCheckedChange={setUseSearchGrounding}
+              />
+              <Label htmlFor="search-grounding" className="text-xs flex items-center gap-1">
+                <Search className="h-3 w-3" />
+                Enable web search for up-to-date information
+              </Label>
+            </div>
+            
+            <div className="flex gap-2">
+              <Input
+                className="flex-1"
+                placeholder="Ask about mortgages, saving strategies, or finances..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isAnalyzing}
+              />
+              <Button onClick={handleSendMessage} disabled={!input.trim() || isAnalyzing}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 

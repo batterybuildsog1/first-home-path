@@ -4,6 +4,8 @@ import Navbar from "@/components/layout/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MortgageCalculator from "@/components/calculators/MortgageCalculator";
 import HomeAffordabilityCalculator from "@/components/calculators/HomeAffordabilityCalculator";
+import { Card, CardContent } from "@/components/ui/card";
+import { InfoCircle, Search } from "lucide-react";
 
 const Calculator = () => {
   return (
@@ -15,6 +17,22 @@ const Calculator = () => {
           <h1 className="text-2xl font-bold">Financial Calculators</h1>
           <p className="text-muted-foreground">Tools to help you plan your home purchase</p>
         </div>
+        
+        <Card className="border-muted/30 bg-appNavy/50">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="bg-appPurple/20 p-2 rounded-full mt-1">
+                <InfoCircle className="h-4 w-4 text-appPurple" />
+              </div>
+              <div>
+                <h3 className="font-medium mb-1">New: AI-Powered Calculators</h3>
+                <p className="text-sm text-muted-foreground">
+                  Our calculators now use Gemini 2.5 Pro with Google Search to provide up-to-date mortgage rates and location-specific property tax and insurance estimates. Look for the <Search className="h-3 w-3 inline ml-1 mr-1" /> icon to access these features.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
         <Tabs defaultValue="mortgage" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 md:w-auto">
