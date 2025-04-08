@@ -85,7 +85,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
   };
 
   const handleNext = () => {
-    const isStepValid = validateStep();
+    const isStepValid = validateCurrentStep(step);
     if (isStepValid) {
       setStep((prev) => Math.min(prev + 1, totalSteps));
     }
@@ -95,8 +95,8 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const validateStep = () => {
-    if (step === 1) {
+  const validateCurrentStep = (currentStep: number) => {
+    if (currentStep === 1) {
       if (!formData.name || !formData.email) {
         toast({
           title: "Missing Information",
@@ -132,7 +132,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         });
         return false;
       }
-    } else if (step === 2) {
+    } else if (currentStep === 2) {
       if (!formData.income || !formData.savings || !formData.creditScore) {
         toast({
           title: "Missing Financial Information",
@@ -141,7 +141,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         });
         return false;
       }
-    } else if (step === 3) {
+    } else if (currentStep === 3) {
       if (!formData.debtCarPayment && 
           !formData.debtCreditCards && 
           !formData.debtStudentLoans && 
@@ -161,7 +161,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateStep()) return;
+    if (!validateCurrentStep(step)) return;
     
     setIsSubmitting(true);
     
