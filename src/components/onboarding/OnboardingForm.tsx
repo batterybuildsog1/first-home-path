@@ -35,7 +35,11 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
     income: "",
     savings: "",
     creditScore: "620-639",
-    debt: "",
+    debtCarPayment: "",
+    debtCreditCards: "",
+    debtStudentLoans: "",
+    debtPersonalLoans: "",
+    debtOther: "",
     homeGoal: "6-12 months",
     city: "",
     state: "",
@@ -145,11 +149,15 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
         return false;
       }
     } else if (step === 3) {
-      // This validation was missing for the final step
-      if (!formData.debt) {
+      // At least one debt field should be filled, or explicitly set to 0 if they have no debt
+      if (!formData.debtCarPayment && 
+          !formData.debtCreditCards && 
+          !formData.debtStudentLoans && 
+          !formData.debtPersonalLoans && 
+          !formData.debtOther) {
         toast({
-          title: "Missing Debt Information",
-          description: "Please provide your monthly debt payments to continue.",
+          title: "Debt Information Required",
+          description: "Please provide your monthly debt payments (or enter 0 if none).",
           variant: "destructive",
         });
         return false;
@@ -166,10 +174,27 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
     
     setIsSubmitting(true);
     
+    // Combine debt fields for backward compatibility with existing dashboard
+    const totalDebt = [
+      formData.debtCarPayment || "0",
+      formData.debtCreditCards || "0",
+      formData.debtStudentLoans || "0", 
+      formData.debtPersonalLoans || "0",
+      formData.debtOther || "0"
+    ].map(val => parseFloat(val.replace(/[$,]/g, "")) || 0)
+     .reduce((sum, val) => sum + val, 0)
+     .toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+     .replace(/\.00$/, '');
+
+    const processedData = {
+      ...formData,
+      debt: totalDebt
+    };
+    
     // Simulate API call delay
     setTimeout(() => {
       setIsSubmitting(false);
-      onComplete(formData);
+      onComplete(processedData);
       toast({
         title: "Onboarding Complete!",
         description: "Welcome to FirstHomePath. Your journey begins now!",
@@ -319,32 +344,103 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
 
           {step === 3 && (
             <div className="space-y-4 animate-fade-in">
-              <div className="space-y-2">
-                <Label htmlFor="debt">What's your total monthly debt payments?</Label>
-                <Input
-                  id="debt"
-                  name="debt"
-                  placeholder="$ 1,000"
-                  value={formData.debt}
-                  onChange={handleInputChange}
-                />
+              <div>
+                <Label className="text-base font-medium mb-3 block">
+                  What are your monthly debt payments?
+                </Label>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Enter 0 if you don't have a particular type of debt
+                </p>
+                
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="debtCarPayment" className="text-sm">Car Payment</Label>
+                    <Input
+                      id="debtCarPayment"
+                      name="debtCarPayment"
+                      placeholder="$ 0"
+                      value={formData.debtCarPayment}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="debtCreditCards" className="text-sm">Credit Card Payments (minimum monthly)</Label>
+                    <Input
+                      id="debtCreditCards"
+                      name="debtCreditCards"
+                      placeholder="$ 0"
+                      value={formData.debtCreditCards}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="debtStudentLoans" className="text-sm">Student Loan Payments</Label>
+                    <Input
+                      id="debtStudentLoans"
+                      name="debtStudentLoans"
+                      placeholder="$ 0"
+                      value={formData.debtStudentLoans}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="debtPersonalLoans" className="text-sm">Personal Loan Payments</Label>
+                    <Input
+                      id="debtPersonalLoans"
+                      name="debtPersonalLoans"
+                      placeholder="$ 0"
+                      value={formData.debtPersonalLoans}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="debtOther" className="text-sm">Other Monthly Debt</Label>
+                    <Input
+                      id="debtOther"
+                      name="debtOther"
+                      placeholder="$ 0"
+                      value={formData.debtOther}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
               </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="homeGoal">When would you like to buy a home?</Label>
-                <Select 
-                  value={formData.homeGoal} 
-                  onValueChange={(value) => handleSelectChange("homeGoal", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select timeframe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0-6 months">0-6 months</SelectItem>
-                    <SelectItem value="6-12 months">6-12 months</SelectItem>
-                    <SelectItem value="1-2 years">1-2 years</SelectItem>
-                    <SelectItem value="2+ years">2+ years</SelectItem>
-                  </SelectContent>
-                </Select>
+                <TooltipProvider>
+                  <div className="flex items-center gap-2">
+                    <Select 
+                      value={formData.homeGoal} 
+                      onValueChange={(value) => handleSelectChange("homeGoal", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select timeframe" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0-6 months">0-6 months</SelectItem>
+                        <SelectItem value="6-12 months">6-12 months</SelectItem>
+                        <SelectItem value="1-2 years">1-2 years</SelectItem>
+                        <SelectItem value="2+ years">2+ years</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-5 w-5 p-0">
+                          <HelpCircle className="h-4 w-4" />
+                          <span className="sr-only">Timeline information</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>This helps us personalize your homebuying journey and set appropriate milestones for your dashboard.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
               </div>
             </div>
           )}
